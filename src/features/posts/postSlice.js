@@ -31,7 +31,7 @@ const postSlice = createSlice({
     },
     updateReaction(state, action){
       const {id, reaction}= action.payload
-      const currentPost = state.find(post => post.id === id)
+      const currentPost = state.posts.find(post => post.id === id)
       if (id && reaction) {
         currentPost.reactions[reaction]++
       }
