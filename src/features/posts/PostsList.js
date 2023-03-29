@@ -1,12 +1,31 @@
-import React from 'react';
-import {useSelector} from "react-redux";
+import React, {useEffect} from 'react';
+import {useDispatch, useSelector} from "react-redux";
 import {Link} from "react-router-dom";
 import TimeAgo from "./TimeAgo";
 import ReactionButton from "./ReactionButton";
+import {fetchPosts, selectAllPosts} from "./postSlice";
+import {Spinner} from "../../components/Spinner";
 
 function PostsList() {
-  const posts = useSelector(state => state.posts)
+  const dispatch = useDispatch()
+  const posts = useSelector(selectAllPosts)
+  const postsStatus = useSelector(state => state.posts.status)
   const orderedPosts = posts.slice().sort((a,b)=> b.date.localeCompare(a.date))
+
+  useEffect(()=>{
+    if (postsStatus === 'idle'){
+      dispatch(fetchPosts())
+    }
+
+  },[postsStatus, dispatch])
+
+  if (postsStatus === 'pending'){
+    return (
+      <Spinner text={'loading'}></Spinner>
+    )
+  }
+
+
   return (
     <section className='post-list'>
       <h2 >Posts</h2>

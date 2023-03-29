@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {useDispatch, useSelector} from "react-redux";
-import {addPost} from "./postSlice";
+import {addNewPost, addPost} from "./postSlice";
 
 function AddPostForm() {
 
@@ -9,16 +9,27 @@ function AddPostForm() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [userId, setUserId] = useState('')
+  const [addRequestSatus, setAddRequestSatus] = useState('idle')
   const dispatch = useDispatch()
 
-  const canSave = title && content && userId
-  const saveNewPost = () =>{
-    if (userId && title && content){
-      dispatch(addPost({title, content, userId}))
-      setTitle('')
-      setContent('')
-      setUserId('')
+  const canSave = [title, content, userId].every(Boolean) && addRequestSatus === 'idle'
+  const saveNewPost = async () => {
+
+    if (canSave) {
+      try{
+        setAddRequestSatus('pending')
+        await dispatch(addNewPost({title, content, user: userId})).unwrap()
+        setTitle('')
+        setContent('')
+        setUserId('')
+      }catch (e){
+        console.log(e.message)
+      }finally {
+        setAddRequestSatus('idle')
+      }
     }
+
+
   }
 
   return (
@@ -31,10 +42,10 @@ function AddPostForm() {
           id="postTitle"
           name="postTitle"
           value={title}
-          onChange={(e)=> setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
         />
         <label htmlFor="postAuthor">Author:</label>
-        <select id="postAuthor" value={userId} onChange={(e)=> setUserId(e.target.value)}>
+        <select id="postAuthor" value={userId} onChange={(e) => setUserId(e.target.value)}>
           <option value=""></option>
           {users.map(user =>
             <option key={user.id} value={`${user.id}`}>{user.name}</option>
@@ -45,7 +56,7 @@ function AddPostForm() {
           id="postContent"
           name="postContent"
           value={content}
-          onChange={(e)=> setContent(e.target.value)}
+          onChange={(e) => setContent(e.target.value)}
         />
         <button type="button" onClick={saveNewPost} disabled={!canSave}>Save Post</button>
       </form>

@@ -1,11 +1,12 @@
-import {createSlice, nanoid} from "@reduxjs/toolkit";
-import {sub} from "date-fns";
+import {createAsyncThunk, createSlice, nanoid} from "@reduxjs/toolkit";
+import {client} from "../../api/client";
 
 
-const initialState = [
-  {id: '0', title: 'Hellor', content: 'Hello content', user: '1', date: sub(new Date(), { minutes: 10 }).toISOString(), reactions: {thumbsUp: 0, hooray: 0, heart: 0, rocket: 0, eyes: 0}},
-  {id: '1', title: 'Hellor2', content: 'Hello content2', user: '0', date: sub(new Date(), { minutes: 10 }).toISOString(), reactions: {thumbsUp: 0, hooray: 0, heart: 0, rocket: 0, eyes: 0}},
-]
+const initialState = {
+  posts: [],
+  status: 'idle',
+  error: null
+}
 
 const postSlice = createSlice({
   name: 'posts',
@@ -44,9 +45,40 @@ const postSlice = createSlice({
       }
 
     }
+  },
+  extraReducers(builder){
+    builder
+      .addCase(fetchPosts.pending, (state, action)=>{
+        state.status = 'pending'
+      })
+      .addCase(fetchPosts.fulfilled, (state, action)=>{
+        state.status = 'fulfilled'
+        state.posts = state.posts.concat(action.payload)
+      })
+      .addCase(fetchPosts.rejected, (state, action)=>{
+        state.status = 'rejected'
+        state.error = action.error.message
+      })
+      .addCase(addNewPost.fulfilled, (state, action)=>{
+        state.posts .push(action.payload)
+      })
   }
+
+})
+
+
+export const addNewPost = createAsyncThunk('posts/AddNewPost', async (initialPosts)=>{
+  const response = await client.post('/fakeApi/posts', initialPosts)
+  return response.data
+})
+
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', async ()=>{
+  const response = await client.get('/fakeApi/posts')
+  return response.data
 })
 
 
 export default postSlice.reducer
 export const  { addPost, updatePost, updateReaction } = postSlice.actions
+export const selectAllPosts = state => state.posts.posts
+export const selectPostById = (state, id) => state.posts.posts.find(post => post.id === id)
