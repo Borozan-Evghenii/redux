@@ -7,10 +7,19 @@ const notificationSlice = createSlice({
 
     name: 'notification',
     initialState: [],
-    reducers:{},
+    reducers:{
+      allNotificationRead(state, action){
+        state.forEach(notification =>
+          notification.read = true
+        )
+      },
+    },
     extraReducers(builder){
         builder.addCase(fetchNotification.fulfilled, (state, action)=>{
             state.push(...action.payload)
+            state.forEach(notification => {
+              notification.isNew = !notification.read
+            })
             state.sort((a,b)=> b.date.localeCompare(a.date))
         })
     }
@@ -28,5 +37,6 @@ export const fetchNotification = createAsyncThunk('notification/fetchNotificatio
 })
 
 export default notificationSlice.reducer
+export const {allNotificationRead} = notificationSlice.actions
 
 export const selectAllNotification = state => state.notification
