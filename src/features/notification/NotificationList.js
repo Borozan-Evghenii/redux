@@ -1,14 +1,14 @@
 import React, {useEffect, useLayoutEffect} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {allNotificationRead, selectAllNotification} from "./notificationSlice";
-import {getAllUsers} from "../users/userSlice";
+import {getAllUsers, selectAllUsers} from "../users/userSlice";
 import {formatDistanceToNow, parseISO} from "date-fns";
 import classnames from 'classnames'
 
 function NotificationList() {
     const dispatch = useDispatch()
     const notifications = useSelector(selectAllNotification)
-    const users = useSelector(getAllUsers)
+    const users = useSelector(selectAllUsers)
     useLayoutEffect(()=>{
       dispatch(allNotificationRead())
     })
@@ -16,7 +16,7 @@ function NotificationList() {
 
     const renderNotification = notifications.map(notification => {
         const date = parseISO(notification.date)
-        const user = users.find(user => user.id === notification.user ) || {name: 'Unknown User'}
+        const user = users[notification.user] || {name: 'Unknown User'}
         const timeAgo = formatDistanceToNow(date)
         const notificationClassname = classnames('notification', {
           new: notification.isNew

@@ -1,10 +1,10 @@
 import React from 'react';
 import {useSelector} from "react-redux";
 import {Link} from "react-router-dom";
-import {getAllUsers} from "./userSlice";
+import { selectAllUsers} from "./userSlice";
 
 function UserList() {
-  const users = useSelector(getAllUsers)
+  const users = useSelector(selectAllUsers)
 
 
   return (

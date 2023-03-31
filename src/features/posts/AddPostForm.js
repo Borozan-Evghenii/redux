@@ -1,10 +1,11 @@
 import React, {useState} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {addNewPost, addPost} from "./postSlice";
+import {selectAllUsers} from "../users/userSlice";
 
 function AddPostForm() {
 
-  const users = useSelector(state => state.users)
+  const users = useSelector(selectAllUsers)
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
