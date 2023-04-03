@@ -1,24 +1,23 @@
 import React from 'react';
-import {useSelector} from "react-redux";
 import {Link} from "react-router-dom";
 import PostAuthor from "./PostAuthor";
 import TimeAgo from "./TimeAgo";
 import ReactionButton from "./ReactionButton";
-import {selectPostById} from "./postSlice";
+import {useGetPostQuery} from "../api/apiSlice";
+import {Spinner} from "../../components/Spinner";
 
 function SinglePostPage({match}) {
   const {id} = match.params
-
-  const post = useSelector(state => selectPostById(state, id))
-
+  const {data: post =[], isFetching} = useGetPostQuery(id)
   if (!post) {
     return (
       <section>
         <h2>Post not found!</h2>
       </section>
     )
+  } else if (isFetching){
+    return (<Spinner text={'isLoading'}/>)
   }
-
   return (
     <section>
       <article className="post">

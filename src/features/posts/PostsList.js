@@ -1,34 +1,22 @@
-import React, {useEffect} from 'react';
-import {useDispatch, useSelector} from "react-redux";
+import React, {useMemo} from 'react';
 import {Link} from "react-router-dom";
 import TimeAgo from "./TimeAgo";
 import ReactionButton from "./ReactionButton";
-import {fetchPosts, selectAllPosts, selectPostById, selectPostsIds} from "./postSlice";
 import {Spinner} from "../../components/Spinner";
+import {useGetPostsQuery} from "../api/apiSlice";
 
 function PostsList() {
-  const dispatch = useDispatch()
-  const posts = useSelector(selectAllPosts)
-  const postsStatus = useSelector(state => state.posts.status)
-  const orderedPosts = useSelector(selectPostsIds)
+  const {data: posts = [], isLoading, isSuccess, isError, error, refetch} = useGetPostsQuery()
 
-  useEffect(() => {
-    if (postsStatus === 'idle') {
-      dispatch(fetchPosts())
-    }
+  const sortedPosts = useMemo(()=>{
+    const  sortedPosts = posts.slice()
+    sortedPosts.sort((a,b)=> b.date.localeCompare(a.date))
+    return sortedPosts
+  },[posts])
 
-  }, [postsStatus, dispatch])
-
-  if (postsStatus === 'pending') {
+  let PostExcerpt = ({post}) => {
     return (
-      <Spinner text={'loading'}></Spinner>
-    )
-  }
 
-  let PostExcerpt = ({postId}) => {
-    const post = useSelector(state => selectPostById(state, postId))
-    return (
-      <>
         <article className="post-excerpt">
           <h3>{post.title}</h3>
           <p className="post-content">{post.content.substring(0, 100)}</p>
@@ -36,17 +24,24 @@ function PostsList() {
           <Link to={`/post/${post.id}`}>View More</Link>
           <ReactionButton post={post}/>
         </article>
-      </>
     )
   }
   PostExcerpt = React.memo(PostExcerpt)
-
+    let content
+  if (isLoading) {
+    content = (<Spinner text="Loading..." />)
+  } else if (isSuccess) {
+    content = (sortedPosts.map(post => <PostExcerpt key={post.id} post={post} />))
+  } else if (isError) {
+    content = (<div>{error.toString()}</div>)
+  }
   return (
-    <section className='post-list'>
+    <section className={'post-list'}>
       <h2>Posts</h2>
-      {orderedPosts.map(postId =>
-        <PostExcerpt key={postId} postId={postId}/>
-      )}
+        <button onClick={refetch}>Refetch Posts</button>
+      {
+        content
+      }
     </section>
   );
 }
