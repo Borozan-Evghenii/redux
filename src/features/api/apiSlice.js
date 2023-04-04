@@ -33,7 +33,14 @@ export const apiSlice = createApi({
                 body: post,
             }),
             invalidatesTags: (result, error, arg) => [{type: 'Posts', id: arg.id}]
-
+        }),
+        getUsers: builder.query({
+            query: ()=>'/users'
+        }),
+        getUserById: builder.query({
+            query: userId=>({
+                url: `/users/${userId}`
+            })
         })
 
 
@@ -45,5 +52,7 @@ export const {
     useGetPostsQuery,
     useGetPostQuery,
     useAddNewPostMutation,
-    useEditPostMutation
+    useEditPostMutation,
+    useGetUsersQuery,
+    useGetUserByIdQuery
 } = apiSlice
